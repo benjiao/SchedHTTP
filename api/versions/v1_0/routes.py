@@ -28,13 +28,12 @@ def createTask():
     }
     ```
     """
-    
-    
+
     response_body = {
         "data": {
             "type": "task",
             "attributes": {
-                "time": 
+                "time": "2015-03-10 00:00:00"
             },
             "links": [
                 'http://api.reach-social.com/v1.0/1'
@@ -46,4 +45,3 @@ def createTask():
     response.headers['Location'] = 'http://api.reach-social.com/gnip/v1.0/1'
     response.headers['Content-Type'] = 'application/vnd.api+json'
     return response
-
