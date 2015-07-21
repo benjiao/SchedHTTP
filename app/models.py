@@ -12,7 +12,7 @@ class Task(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String)
-    scheduled_time = Column(Integer)
+    scheduled_time = Column(DateTime)
     endpoint_url = Column(String)
     endpoint_headers = Column(String)
     endpoint_body = Column(String)
@@ -26,7 +26,6 @@ class Task(Base):
     def __init__(self, task_uuid, scheduled_time=None,
                  endpoint_url=None, endpoint_headers=None,
                  endpoint_body=None, endpoint_method=None,
-                 retry_count=None, last_retry_date=None,
                  max_retry_count=None):
 
         self.uuid = task_uuid
@@ -35,8 +34,6 @@ class Task(Base):
         self.endpoint_headers = endpoint_headers
         self.endpoint_body = endpoint_body
         self.endpoint_method = endpoint_method
-        self.retry_count = retry_count
-        self.last_retry_date = last_retry_date
         self.max_retry_count = max_retry_count
 
 

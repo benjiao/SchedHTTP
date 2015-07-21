@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from models import Task
 from sqlalchemy.orm import sessionmaker
 
@@ -14,7 +15,7 @@ class TaskLogic:
         """ This function inserts a new Task into the database
 
         :param scheduled_time: The set timestamp when the task is going to be run
-        :type scheduled_time: str -- UTC Time in "YYYY-MM-DD HH:MM" format
+        :type scheduled_time: datetime.
 
         :param endpoint_url: The URL to be called when on the scheduled time indicated
         :type endpoint_url: str -- A valid URL string
@@ -114,7 +115,22 @@ class TaskLogic:
 
 if __name__ == '__main__':
     from sqlalchemy import create_engine
+    data = {
+            "scheduled_time": "2020-01-01 00:00:00",
+            "endpoint_url": "http://test.com/test",
+            "endpoint_headers": None,
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
 
-    engine = create_engine('sqlite:///app.db', echo=True)
+    engine = create_engine('sqlite:///db/test.db', echo=True)
     tasks = TaskLogic(db_engine=engine)
-    tasks.getTaskByUUID("0f37d484-a952-4bcf-a96b-a1c4a2asdasd1c6270")
+
+    tasks.createTask(
+        scheduled_time=data["scheduled_time"],
+        endpoint_url=data["endpoint_url"],
+        endpoint_headers=data["endpoint_headers"],
+        endpoint_body=data["endpoint_body"],
+        endpoint_method=data["endpoint_method"],
+        max_retry_count=data["max_retry_count"])

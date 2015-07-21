@@ -1,15 +1,19 @@
 import unittest
+from datetime import datetime
 from sqlalchemy import create_engine
-from models import Task, Base
-from tasks import TaskLogic
+from ..models import Task
+from ..tasks import TaskLogic
 
 
 class TestTasksCrud(unittest.TestCase):
+    def test_schedule_time_format(self):
+        pass
+
     def test_create_and_delete(self):
         print "\n[TestTasksCrud] - Create and Delete"
 
         data = {
-            "scheduled_time": "2020-01-01 00:00:00",
+            "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
             "endpoint_url": "http://test.com/test",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
@@ -17,7 +21,7 @@ class TestTasksCrud(unittest.TestCase):
             "max_retry_count": 5
         }
 
-        engine = create_engine('sqlite:///test.db', echo=False)
+        engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
 
         # Create test task
@@ -54,7 +58,7 @@ class TestTasksCrud(unittest.TestCase):
     def test_count_and_delete_all(self):
         print "\n[TestTasksCrud] - Count and Delete All"
         data = {
-            "scheduled_time": "2020-01-01 00:00:00",
+            "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
             "endpoint_url": "http://test.com/test",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
@@ -62,7 +66,7 @@ class TestTasksCrud(unittest.TestCase):
             "max_retry_count": 5
         }
 
-        engine = create_engine('sqlite:///test.db', echo=False)
+        engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
 
         # Delete current tasks in the test database
@@ -92,3 +96,18 @@ class TestTasksCrud(unittest.TestCase):
         self.assertTrue(delete_results)
         task_count3 = tasks.getTaskCount()
         self.assertEqual(task_count3, 0)
+
+    def test_update(self):
+        print "\n[TestTasksCrud] - Update"
+
+        data = {
+            "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
+            "endpoint_url": "http://test.com/test",
+            "endpoint_headers": None,
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
