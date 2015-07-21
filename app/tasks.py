@@ -159,6 +159,11 @@ class TaskLogic:
         active_tasks = session.query(Task).\
             filter(Task.scheduled_time < current_time).limit(limit).all()
 
+        """ TODO: Filter tasks by:
+            (1) Last retry attempt is beyond set timeout value in config
+            (2) Task is not flagged as 'sent'
+        """
+
         return active_tasks
 
 
