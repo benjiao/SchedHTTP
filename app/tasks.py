@@ -1,6 +1,6 @@
 import uuid
-from datetime import datetime
 from models import Task
+from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 
 
@@ -113,12 +113,44 @@ class TaskLogic:
 
         return True
 
+    def updateTask(self, task_uuid, fields_to_update):
+        """ This function inserts a new Task into the database.
+
+        Usage:
+            tasks.updateTask("12345-12345-1234-1234", {
+                    "scheduled_time": datetime.strptime("2020-01-06 00:00:00", "%Y-%m-%d %H:%M:%S")
+                }
+
+
+        :param task_uuid: The uuid of the task being changed
+        :type task_uuid: str -- A UUID string
+
+        :param fields_to_update: A key-value pair list of fields to update
+        :type fields_to_update: dict() -- where key is the field name and the value is the new value
+
+        :return: True if successful, False otherwise
+        :rtype: boolean
+        """
+
+        session = self.sm()
+        results = session.query(Task).\
+            filter_by(uuid=task_uuid).\
+            update(fields_to_update)
+
+        print results
+        session.commit()
+
+        return True
+
+
 if __name__ == '__main__':
     from sqlalchemy import create_engine
     data = {
-            "scheduled_time": "2020-01-01 00:00:00",
+            "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
             "endpoint_url": "http://test.com/test",
-            "endpoint_headers": None,
+            "endpoint_headers": {
+                "Authentication": "Test:Testing"
+            },
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
             "max_retry_count": 5

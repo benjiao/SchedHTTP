@@ -6,8 +6,6 @@ from ..tasks import TaskLogic
 
 
 class TestTasksCrud(unittest.TestCase):
-    def test_schedule_time_format(self):
-        pass
 
     def test_create_and_delete(self):
         print "\n[TestTasksCrud] - Create and Delete"
@@ -15,7 +13,9 @@ class TestTasksCrud(unittest.TestCase):
         data = {
             "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
             "endpoint_url": "http://test.com/test",
-            "endpoint_headers": None,
+            "endpoint_headers": {
+                "Authentication": "Test:Testing"
+            },
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
             "max_retry_count": 5
@@ -54,6 +54,9 @@ class TestTasksCrud(unittest.TestCase):
         # Confirm that deleted task is gone
         task_retrieved = tasks.getTaskByUUID(task_uuid)
         self.assertIsNone(task_retrieved)
+
+        # Delete all tasks
+        tasks.deleteAllTasks()
 
     def test_count_and_delete_all(self):
         print "\n[TestTasksCrud] - Count and Delete All"
@@ -111,3 +114,33 @@ class TestTasksCrud(unittest.TestCase):
 
         engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
+
+        # Create original task
+        original_uuid = tasks.createTask(
+            scheduled_time=data["scheduled_time"],
+            endpoint_url=data["endpoint_url"],
+            endpoint_headers=data["endpoint_headers"],
+            endpoint_body=data["endpoint_body"],
+            endpoint_method=data["endpoint_method"],
+            max_retry_count=data["max_retry_count"])
+
+        # Compare original task values
+        original_task = tasks.getTaskByUUID(task_uuid=original_uuid)
+        self.assertEqual(original_task.scheduled_time, data["scheduled_time"])
+        self.assertEqual(original_task.endpoint_url, data["endpoint_url"])
+        self.assertEqual(original_task.endpoint_headers, data["endpoint_headers"])
+        self.assertEqual(original_task.endpoint_body, data["endpoint_body"])
+        self.assertEqual(original_task.endpoint_method, data["endpoint_method"])
+        self.assertEqual(original_task.max_retry_count, data["max_retry_count"])
+
+        # Update task scheduled_time
+        new_scheduled_time = datetime.strptime("2020-01-03 00:00:00", "%Y-%m-%d %H:%M:%S")
+        tasks.updateTask(original_uuid, {
+            "scheduled_time": new_scheduled_time,
+            })
+
+        updated_task = tasks.getTaskByUUID(task_uuid=original_uuid)
+        self.assertEqual(updated_task.scheduled_time, new_scheduled_time)
+
+        # Delete all tasks
+        tasks.deleteAllTasks()
