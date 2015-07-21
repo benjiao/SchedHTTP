@@ -6,7 +6,9 @@ from sqlalchemy import create_engine
 
 app = Flask(__name__)
 
-engine = create_engine('sqlite:///db/test.db', echo=False)
+app.config.from_object('config.Config')
+
+engine = create_engine(app.config['DATABASE_URI'], echo=False)
 
 # Add application logic to flask app (?)
 app.tasks = TaskLogic(db_engine=engine)
@@ -17,11 +19,11 @@ if __name__ == '__main__':
     import logging
     from logging.handlers import RotatingFileHandler
 
-    formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
+    formatter = logging.Formatter(app.config['LOG_FORMAT'])
 
-    handler = RotatingFileHandler('foo.log')
+    handler = RotatingFileHandler(app.config['LOG_FILE'])
     handler.setFormatter(formatter)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(app.config['LOG_LEVEL'])
     app.logger.addHandler(handler)
 
     app.run(host='0.0.0.0', debug=True)
