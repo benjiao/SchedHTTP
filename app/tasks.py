@@ -1,6 +1,8 @@
 import uuid
+import json
 from models import Task
 from datetime import datetime
+from datetime import timedelta
 from sqlalchemy.orm import sessionmaker
 
 
@@ -145,29 +147,69 @@ class TaskLogic:
     def getActiveTasks(self, limit=None):
         """ Retrieve overdue tasks.
 
+            :param limit: A limit to the number of tasks to return. None means no limit
+            :type limit: int.
+
+            :return: A list of active tasks
+            :rtype: A list() of Task objects
         """
+
+        session = self.sm()
+        current_time = datetime.utcnow()
+        active_tasks = session.query(Task).\
+            filter(Task.scheduled_time < current_time).limit(limit).all()
+
+        return active_tasks
 
 
 if __name__ == '__main__':
     from sqlalchemy import create_engine
-    data = {
-            "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            "endpoint_url": "http://test.com/test",
-            "endpoint_headers": {
-                "Authentication": "Test:Testing"
-            },
-            "endpoint_body": "Test Body",
-            "endpoint_method": "POST",
-            "max_retry_count": 5
-        }
 
     engine = create_engine('sqlite:///db/test.db', echo=True)
     tasks = TaskLogic(db_engine=engine)
 
-    tasks.createTask(
-        scheduled_time=data["scheduled_time"],
-        endpoint_url=data["endpoint_url"],
-        endpoint_headers=data["endpoint_headers"],
-        endpoint_body=data["endpoint_body"],
-        endpoint_method=data["endpoint_method"],
-        max_retry_count=data["max_retry_count"])
+    data_past = {
+        "scheduled_time": datetime.utcnow() - timedelta(hours=1),
+        "endpoint_url": "http://test.com/test",
+        "endpoint_headers": None,
+        "endpoint_body": "Test Body",
+        "endpoint_method": "POST",
+        "max_retry_count": 5
+    }
+
+    data_future = {
+        "scheduled_time": datetime.utcnow() + timedelta(hours=1),
+        "endpoint_url": "http://test.com/test",
+        "endpoint_headers": None,
+        "endpoint_body": "Test Body",
+        "endpoint_method": "POST",
+        "max_retry_count": 5
+    }
+
+    delete_results = tasks.deleteAllTasks()
+
+    # Insert 8 tasks set in the past
+    for x in xrange(8):
+        tasks.createTask(
+            scheduled_time=data_past["scheduled_time"],
+            endpoint_url=data_past["endpoint_url"],
+            endpoint_headers=data_past["endpoint_headers"],
+            endpoint_body=data_past["endpoint_body"],
+            endpoint_method=data_past["endpoint_method"],
+            max_retry_count=data_past["max_retry_count"])
+
+    # Insert 4 tasks set in the future
+    for x in xrange(4):
+        tasks.createTask(
+            scheduled_time=data_future["scheduled_time"],
+            endpoint_url=data_future["endpoint_url"],
+            endpoint_headers=data_future["endpoint_headers"],
+            endpoint_body=data_future["endpoint_body"],
+            endpoint_method=data_future["endpoint_method"],
+            max_retry_count=data_future["max_retry_count"])
+
+    active_tasks_all = tasks.getActiveTasks()
+
+    print datetime.utcnow()
+    for task in active_tasks_all:
+        print task.scheduled_time

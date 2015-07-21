@@ -4,6 +4,7 @@ Scripts for testing the tasks.TaskLogic module
 
 import unittest
 from datetime import datetime
+from datetime import timedelta
 from sqlalchemy import create_engine
 from ..models import Task
 from ..tasks import TaskLogic
@@ -148,3 +149,125 @@ class TestTasksCrud(unittest.TestCase):
 
         # Delete all tasks
         tasks.deleteAllTasks()
+
+
+class TestTaskDaemonFunctions(unittest.TestCase):
+    def test_get_active_tasks(self):
+        """ getActiveTasks must return all active tasks if limit is not set/None
+        """
+
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        data_past = {
+            "scheduled_time": datetime.utcnow() - timedelta(days=1),
+            "endpoint_url": "http://test.com/test",
+            "endpoint_headers": None,
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        data_future = {
+            "scheduled_time": datetime.utcnow() + timedelta(days=1),
+            "endpoint_url": "http://test.com/test",
+            "endpoint_headers": None,
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        # Clear DB for good measure
+        tasks.deleteAllTasks()
+
+        # Insert 8 tasks set in the past
+        for x in xrange(8):
+            tasks.createTask(
+                scheduled_time=data_past["scheduled_time"],
+                endpoint_url=data_past["endpoint_url"],
+                endpoint_headers=data_past["endpoint_headers"],
+                endpoint_body=data_past["endpoint_body"],
+                endpoint_method=data_past["endpoint_method"],
+                max_retry_count=data_past["max_retry_count"])
+
+        # Insert 4 tasks set in the future
+        for x in xrange(4):
+            tasks.createTask(
+                scheduled_time=data_future["scheduled_time"],
+                endpoint_url=data_future["endpoint_url"],
+                endpoint_headers=data_future["endpoint_headers"],
+                endpoint_body=data_future["endpoint_body"],
+                endpoint_method=data_future["endpoint_method"],
+                max_retry_count=data_future["max_retry_count"])
+
+        active_tasks_all = tasks.getActiveTasks()
+        self.assertEqual(len(active_tasks_all), 8)
+
+        tasks.deleteAllTasks()
+
+    def test_get_active_tasks_with_limit(self):
+        """ getActiveTasks must follow limit if it is set
+        """
+
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        data_past = {
+            "scheduled_time": datetime.utcnow() - timedelta(days=1),
+            "endpoint_url": "http://test.com/test",
+            "endpoint_headers": None,
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        data_future = {
+            "scheduled_time": datetime.utcnow() + timedelta(days=1),
+            "endpoint_url": "http://test.com/test",
+            "endpoint_headers": None,
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        # Clear DB for good measure
+        tasks.deleteAllTasks()
+
+        # Insert 8 tasks set in the past
+        for x in xrange(8):
+            tasks.createTask(
+                scheduled_time=data_past["scheduled_time"],
+                endpoint_url=data_past["endpoint_url"],
+                endpoint_headers=data_past["endpoint_headers"],
+                endpoint_body=data_past["endpoint_body"],
+                endpoint_method=data_past["endpoint_method"],
+                max_retry_count=data_past["max_retry_count"])
+
+        # Insert 4 tasks set in the future
+        for x in xrange(4):
+            tasks.createTask(
+                scheduled_time=data_future["scheduled_time"],
+                endpoint_url=data_future["endpoint_url"],
+                endpoint_headers=data_future["endpoint_headers"],
+                endpoint_body=data_future["endpoint_body"],
+                endpoint_method=data_future["endpoint_method"],
+                max_retry_count=data_future["max_retry_count"])
+
+        active_tasks = tasks.getActiveTasks(limit=5)
+        self.assertEqual(len(active_tasks), 5)
+
+        tasks.deleteAllTasks()
+
+    def test_get_active_tasks_empty(self):
+        """ getActiveTasks must return an empty list if no task is currently
+            active
+        """
+
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        tasks.deleteAllTasks()
+
+        active_tasks = tasks.getActiveTasks()
+        self.assertEqual(len(active_tasks), 0)
+        self.assertIsInstance(active_tasks, list)
