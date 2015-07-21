@@ -63,8 +63,7 @@ def createTask():
     try:
         scheduled_time_dt = datetime.strptime(scheduled_time, "%Y-%m-%d %H:%M:%S")
     except:
-        response = make_response("Timestamps should be in YYYY-MM-DD HH:MM:SS format", 403)
-        return response
+        return make_response("Timestamps should be in YYYY-MM-DD HH:MM:SS format", 403)
 
     # Proceed with creating a task
     task_uuid = current_app.tasks.createTask(
@@ -101,29 +100,25 @@ def createTask():
     return response
 
 
+@mod_tasks.route("/<task_id>", methods=["DELETE"])
+def deleteTask(task_id):
+    current_app.logger.info("Delete Task Called! %s", task_id)
+
+    try:
+        current_app.tasks.deleteTaskByUUID(task_uuid=task_id)
+        return make_response("Task successfully deleted!", 200)
+    except:
+        current_app.logger.exception("Error in delete task")
+        return make_response("An error occured while deleting task", 500)
+
+
 @mod_tasks.route("/", methods=["GET"])
 def getTasks():
     """
     Returns a list of all tasks
     """
     current_app.logger.info("Get Tasks Called!")
-
-    response_body = {
-        "data": {
-            "type": "task",
-            "attributes": {
-                "time": "2015-03-10 00:00:00"
-            },
-            "links": [
-                'http://localhost/tasks/'
-            ]
-        }
-    }
-
-    response = make_response(json.dumps(response_body), 200)
-    response.headers['Location'] = 'http://api.reach-social.com/gnip/v1.0/1'
-    response.headers['Content-Type'] = 'application/vnd.api+json'
-    return response
+    return make_response("This service is not yet implemented.", 501)
 
 
 @mod_tasks.route("/<task_id>", methods=["GET"])
@@ -131,32 +126,9 @@ def getTask(task_id):
     """
     Returns details about a specific task
     """
-    current_app.logger.info("Get Task Called!")
-
-    response_body = {
-        "data": {
-            "type": "task",
-            "attributes": {
-                "time": "2015-03-10 00:00:00"
-            },
-            "links": [
-                'http://localhost/tasks/'
-            ]
-        }
-    }
-    response = make_response(json.dumps(response_body), 201)
-    response.headers['Location'] = 'http://api.reach-social.com/gnip/v1.0/1'
-    response.headers['Content-Type'] = 'application/vnd.api+json'
-    return response
-
-
-@mod_tasks.route("/<task_id>", methods=["DELETE"])
-def deleteTask(task_id):
-    current_app.logger.info("Delete Task Called!")
-    return json.dumps({"data": ""})
+    return make_response("This service is not yet implemented.", 501)
 
 
 @mod_tasks.route("/<task_id>", methods=["PATCH"])
 def updateTask(task_id):
-    current_app.logger.info("Update Task Called!")
-    return json.dumps({"data": ""})
+    return make_response("This service is not yet implemented.", 501)

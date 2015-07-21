@@ -31,8 +31,7 @@ if __name__ == '__main__':
     }
 
     url = "http://localhost:5000/tasks/"
-    method = "POST"
-    req = Request2(url, method, data=json.dumps(request_body))
+    req = Request2(url, method="POST", data=json.dumps(request_body))
     req.add_header('Content-type', 'application/vnd.api+json')
     req.add_header('Accept', 'application/vnd.api+json')
 
@@ -41,8 +40,6 @@ if __name__ == '__main__':
         code = response.getcode()
 
         if code == 201:
-            response = urllib2.urlopen(req)
-
             response_json = json.loads(response.read())
             print json.dumps(response_json, indent=4)
 
