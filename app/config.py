@@ -7,3 +7,4 @@ class Config(object):
     LOG_LEVEL = logging.DEBUG
 
     DATABASE_URI = 'sqlite:///db/app.db'
+    TEST_DATABASE_URI = 'sqlite:///db/test.db'
