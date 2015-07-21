@@ -65,7 +65,6 @@ class TaskLogic:
 
         session = self.sm()
         results = session.query(Task).filter_by(uuid=task_uuid).limit(1)
-        print str(results.first())
 
         return results.first()
 
@@ -80,10 +79,36 @@ class TaskLogic:
         """
 
         session = self.sm()
-        results = session.query(Task).filter_by(uuid=task_uuid).\
+        session.query(Task).filter_by(uuid=task_uuid).\
             delete(synchronize_session=False)
         session.commit()
-        print results
+
+        return True
+
+    def getTaskCount(self, include_done=True):
+        """ Retrieves the number of tasks currently in the DB
+
+        :param include_done: Controls whether or not to include finished tasks in the count
+        :type include_done: boolean
+
+        :return: The number of tasks in the DB
+        :rtype: int
+        """
+
+        session = self.sm()
+        task_count = session.query(Task).count()
+        return task_count
+
+    def deleteAllTasks(self):
+        """ Deletes all tasks
+
+        :return: True if successful, False otherwise
+        :rtype: boolean
+        """
+
+        session = self.sm()
+        session.query(Task).delete(synchronize_session=False)
+        session.commit()
 
         return True
 

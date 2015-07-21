@@ -41,5 +41,5 @@ class Task(Base):
 
 
 if __name__ == '__main__':
-    engine = create_engine('sqlite:///app.db')
+    engine = create_engine('sqlite:///db/test.db')
     Base.metadata.create_all(engine)
