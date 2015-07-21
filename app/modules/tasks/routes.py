@@ -11,31 +11,28 @@ mod_tasks = Blueprint('mod_tasks', __name__)
 
 @mod_tasks.route("/", methods=["POST"])
 def createTask():
-    """
-    Creates a new task
+    """ Creates a new task
 
-    Sample Request:
+        Headers:
+            Accept: application/vnd.api+json
+            Content-Type: application/vnd.api+json
 
-    Headers:
-        Accept: application/vnd.api+json
-        Content-Type: application/vnd.api+json
-
-    Body:
-        {
-            "data": {
-                "attributes": {
-                    "scheduled_time": "2015-07-12 00:00:00",
-                    "endpoint_body": "{\"name\": \"Benjie\"}",
-                    "endpoint_headers": {
-                        "Content-Type": "application/json"
+        Body:
+            {
+                "data": {
+                    "attributes": {
+                        "scheduled_time": "2015-07-12 00:00:00",
+                        "endpoint_body": "{\"name\": \"Benjie\"}",
+                        "endpoint_headers": {
+                            "Content-Type": "application/json"
+                        },
+                        "endpoint_method": "POST",
+                        "endpoint_url": "http://example.com/endpoint/",
+                        "max_retry_count": 2
                     },
-                    "endpoint_method": "POST",
-                    "endpoint_url": "http://example.com/endpoint/",
-                    "max_retry_count": 2
-                },
-                "type": "task"
+                    "type": "task"
+                }
             }
-        }
     """
 
     try:
@@ -102,6 +99,12 @@ def createTask():
 
 @mod_tasks.route("/<task_id>", methods=["DELETE"])
 def deleteTask(task_id):
+    """ Deletes a specified task
+
+        Headers:
+            Accept: application/vnd.api+json
+    """
+
     current_app.logger.info("Delete Task Called! %s", task_id)
 
     try:
