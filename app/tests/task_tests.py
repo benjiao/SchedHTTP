@@ -1,3 +1,7 @@
+"""
+Scripts for testing the tasks.TaskLogic module
+"""
+
 import unittest
 from datetime import datetime
 from sqlalchemy import create_engine
