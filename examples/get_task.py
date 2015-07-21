@@ -1,3 +1,4 @@
+import json
 import urllib2
 
 
@@ -15,10 +16,9 @@ class Request2(urllib2.Request):
 if __name__ == '__main__':
     import logging
 
-    task_uuid = "d98ea285-902c-44f5-b264-de9bd2c11473"
-
+    task_uuid = "5e9003e1-2981-43d3-b8bb-6d5571dc53a3"
     url = "http://localhost:5000/tasks/%s" % task_uuid
-    req = Request2(url, method="DELETE")
+    req = Request2(url, method="GET")
     req.add_header('Accept', 'application/vnd.api+json')
 
     try:
@@ -26,7 +26,8 @@ if __name__ == '__main__':
         code = response.getcode()
 
         if code == 200:
-            print response.read()
+            response_json = json.loads(response.read())
+            print json.dumps(response_json, indent=4)
 
-    except:
+    except Exception, e:
         logging.exception("Error!")

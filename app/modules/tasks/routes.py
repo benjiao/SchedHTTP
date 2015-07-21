@@ -115,20 +115,63 @@ def deleteTask(task_id):
         return make_response("An error occured while deleting task", 500)
 
 
+@mod_tasks.route("/<task_id>", methods=["GET"])
+def getTask(task_id):
+    """ Returns details about a specific task
+
+        Headers:
+            Accept: application/vnd.api+json
+            Content-Type: application/vnd.api+json
+
+    """
+
+    task = current_app.tasks.getTaskByUUID(task_uuid=task_id)
+
+    if task is None:
+        return make_response("Task not found", 404)
+
+    scheduled_time = datetime.strftime(task.scheduled_time, "%Y-%m-%d %H:%M:%S")
+    created_date = datetime.strftime(task.created_date, "%Y-%m-%d %H:%M:%S")
+
+    if task.last_retry_date:
+        last_retry_date = datetime.strftime(task.last_retry_date, "%Y-%m-%d %H:%M:%S")
+    else:
+        last_retry_date = None
+
+    response_body = {
+        "links": {
+            "self": 'http://localhost/tasks/%s' % task_id
+        },
+        "data": {
+            "type": "tasks",
+            "id": task_id,
+            "attributes": {
+                "id": task.uuid,
+                "scheduled_time": scheduled_time,
+                "created_date": created_date,
+                "last_retry_date": last_retry_date,
+                "endpoint_url":  task.endpoint_url,
+                "endpoint_headers":  task.endpoint_headers,
+                "endpoint_body":  task.endpoint_body,
+                "endpoint_method":  task.endpoint_method,
+                "max_retry_count":  task.max_retry_count,
+                "retry_count": task.retry_count
+            },
+        }
+    }
+
+    response = make_response(json.dumps(response_body), 200)
+    response.headers['Location'] = 'http://localhost/tasks/'
+    response.headers['Content-Type'] = 'application/vnd.api+json'
+    return response
+
+
 @mod_tasks.route("/", methods=["GET"])
 def getTasks():
     """
     Returns a list of all tasks
     """
     current_app.logger.info("Get Tasks Called!")
-    return make_response("This service is not yet implemented.", 501)
-
-
-@mod_tasks.route("/<task_id>", methods=["GET"])
-def getTask(task_id):
-    """
-    Returns details about a specific task
-    """
     return make_response("This service is not yet implemented.", 501)
 
 

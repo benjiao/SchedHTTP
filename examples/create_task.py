@@ -14,6 +14,8 @@ class Request2(urllib2.Request):
             return urllib2.Request.get_method(self)
 
 if __name__ == '__main__':
+    import logging
+
     request_body = {
         "data": {
             "attributes": {
@@ -44,4 +46,4 @@ if __name__ == '__main__':
             print json.dumps(response_json, indent=4)
 
     except:
-        pass
+        logging.exception("Error!")
