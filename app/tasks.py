@@ -194,7 +194,8 @@ class TaskLogic:
             results = self.sendHTTPRequest(
                 url=task.endpoint_url,
                 method=task.endpoint_method,
-                headers=task.endpoint_headers)
+                headers=task.endpoint_headers,
+                body=task.endpoint_body)
 
             if results is True:
                 # If sending was successful, flag task as sent, save sent_date
@@ -215,7 +216,7 @@ class TaskLogic:
         except:
             raise
 
-    def sendHTTPRequest(self, url, method, headers=None):
+    def sendHTTPRequest(self, url, method, headers=None, body=None):
         # Build HTTP Request
         req = Request2(url, method=method)
 
@@ -227,7 +228,7 @@ class TaskLogic:
             print "No headers!"
 
         try:
-            response = urllib2.urlopen(req)
+            response = urllib2.urlopen(req, data=body)
             code = response.getcode()
 
             if code == 200:
