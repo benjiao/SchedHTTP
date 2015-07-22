@@ -21,7 +21,7 @@ if __name__ == '__main__':
             "attributes": {
                 "scheduled_time": "2015-07-12 00:00:00",
                 "endpoint_method": "POST",
-                "endpoint_url": "http://localhost/asdfasdfqwerqwerasdfasdf",
+                "endpoint_url": "http://headers.jsontest.com/",
                 "max_retry_count": 2
             },
             "type": "task"
