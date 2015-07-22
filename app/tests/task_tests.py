@@ -320,6 +320,14 @@ class TestTaskDaemonFunctions(unittest.TestCase):
         tasks.deleteAllTasks()
 
     def test_call_task_http_endpoint_fail(self):
+        """ On failed call to HTTP Endpoint,
+            the service must increment retry_count on db
+            the last_retry_date field should also be updated
+
+            This test tests the setTaskSendAttemptAsFail function via
+            actual HTTP call fails
+        """
+
         engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
 
@@ -359,6 +367,8 @@ class TestTaskDaemonFunctions(unittest.TestCase):
         """ On failed call to HTTP Endpoint,
             the service must increment retry_count on db
             the last_retry_date field should also be updated
+
+            This test tests the setTaskSendAttemptAsFail function manually
         """
         engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
