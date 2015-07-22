@@ -148,24 +148,29 @@ class TaskLogic:
 
         return True
 
-    def getActiveTasks(self, limit=None):
+    def getActiveTasks(self, limit=None, current_time=datetime.utcnow()):
         """ Retrieve overdue tasks.
 
             :param limit: A limit to the number of tasks to return. None means no limit
             :type limit: int.
+
+            :param current_time: An override for the current_time variable. This is used to
+                retrieve overdue tasks
+            :type current_time: datetime
 
             :return: A list of active tasks
             :rtype: A list() of Task objects
         """
 
         session = self.sm()
-        current_time = datetime.utcnow()
         active_tasks = session.query(Task).\
-            filter(Task.scheduled_time < current_time).limit(limit).all()
+            filter(Task.scheduled_time < current_time).\
+            filter(Task.is_sent == 0).\
+            filter(Task.is_failed == 0).\
+            limit(limit).all()
 
         """ TODO: Filter tasks by:
             (1) Last retry attempt is beyond set timeout value in config
-            (2) Task is not flagged as 'sent'
         """
 
         return active_tasks
@@ -221,6 +226,10 @@ class TaskLogic:
         task.is_sent = False
         task.retry_count = task.retry_count + 1
         task.last_retry_date = datetime.utcnow()
+
+        if task.retry_count == task.max_retry_count:
+            task.is_failed = True
+
         session.commit()
         return True
 

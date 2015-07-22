@@ -407,6 +407,115 @@ class TestTaskDaemonFunctions(unittest.TestCase):
         self.assertIsInstance(task_after2.last_retry_date, datetime)
         self.assertNotEqual(task_after2.last_retry_date, old_retry_date)
 
+    def test_get_active_tasks_retry_limit(self):
+        """ Only tasks that are below their retry limits should be
+            returned by getActiveTasks
+        """
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        data_past = {
+            "scheduled_time": datetime.utcnow() - timedelta(hours=1),
+            "endpoint_url": "http://localhost/asdfasdfwqerqwerzcxvzxcv",
+            "endpoint_headers": None,
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 3
+        }
+
+        task_uuid = tasks.createTask(
+            scheduled_time=data_past["scheduled_time"],
+            endpoint_url=data_past["endpoint_url"],
+            endpoint_headers=data_past["endpoint_headers"],
+            endpoint_body=data_past["endpoint_body"],
+            endpoint_method=data_past["endpoint_method"],
+            max_retry_count=data_past["max_retry_count"])
+
+        tasks.createTask(
+            scheduled_time=data_past["scheduled_time"],
+            endpoint_url=data_past["endpoint_url"],
+            endpoint_headers=data_past["endpoint_headers"],
+            endpoint_body=data_past["endpoint_body"],
+            endpoint_method=data_past["endpoint_method"],
+            max_retry_count=data_past["max_retry_count"])
+
+        # First attempt
+        task1 = tasks.getTaskByUUID(task_uuid)
+        with self.assertRaises(SchedulerHTTPException):
+            tasks.callTaskHTTPEndpoint(task1)
+        active_tasks1 = tasks.getActiveTasks()
+        self.assertEqual(len(active_tasks1), 2)
+
+        # Second attempt
+        task2 = tasks.getTaskByUUID(task_uuid)
+        with self.assertRaises(SchedulerHTTPException):
+            tasks.callTaskHTTPEndpoint(task2)
+        active_tasks2 = tasks.getActiveTasks()
+        self.assertEqual(len(active_tasks2), 2)
+
+        # Third attempt MUST NOT return the failing task anymore
+        task3 = tasks.getTaskByUUID(task_uuid)
+        with self.assertRaises(SchedulerHTTPException):
+            tasks.callTaskHTTPEndpoint(task3)
+        active_tasks3 = tasks.getActiveTasks()
+        self.assertEqual(len(active_tasks3), 1)
+
+        # Verify that task's is_failed flag is True after max attempt
+        failed_task = tasks.getTaskByUUID(task_uuid)
+        self.assertTrue(failed_task.is_failed)
+
+    def test_get_active_tasks_no_is_sent(self):
+        """ Tasks with the is_sent flag should not be included in getActiveTasks
+            results
+        """
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        data_past = {
+            "scheduled_time": datetime.utcnow() - timedelta(hours=1),
+            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_headers": None,
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        task_uuid = tasks.createTask(
+            scheduled_time=data_past["scheduled_time"],
+            endpoint_url=data_past["endpoint_url"],
+            endpoint_headers=data_past["endpoint_headers"],
+            endpoint_body=data_past["endpoint_body"],
+            endpoint_method=data_past["endpoint_method"],
+            max_retry_count=data_past["max_retry_count"])
+
+        task_uuid2 = tasks.createTask(
+            scheduled_time=data_past["scheduled_time"],
+            endpoint_url=data_past["endpoint_url"],
+            endpoint_headers=data_past["endpoint_headers"],
+            endpoint_body=data_past["endpoint_body"],
+            endpoint_method=data_past["endpoint_method"],
+            max_retry_count=data_past["max_retry_count"])
+
+        active_tasks = tasks.getActiveTasks()
+        self.assertEqual(len(active_tasks), 2)
+
+        # Send first task
+        task1 = tasks.getTaskByUUID(task_uuid)
+        tasks.callTaskHTTPEndpoint(task1)
+
+        active_tasks_after_call = tasks.getActiveTasks()
+        self.assertEqual(len(active_tasks_after_call), 1)
+        self.assertEqual(active_tasks_after_call[0].uuid, task_uuid2)
+
+        # Send second task
+        task2 = tasks.getTaskByUUID(task_uuid2)
+        tasks.callTaskHTTPEndpoint(task2)
+
+        active_tasks_after_call2 = tasks.getActiveTasks()
+        self.assertEqual(len(active_tasks_after_call2), 0)
+
+        tasks.deleteAllTasks()
+
 
 class TestTaskHTTPFunctions(unittest.TestCase):
     def test_request_post(self):
