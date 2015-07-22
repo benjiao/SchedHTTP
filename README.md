@@ -15,8 +15,8 @@ We have built this service to trigger jobs/events via HTTP endpoints.
 
 ### Download and extract latest release
 ```
-wget https://github.com/benjiao/SchedHTTP/archive/SchedHTTP-v1.0.0-beta.1.tar.gz
-tar -xvzf SchedHTTP-v1.0.0-beta.1.tar.gz
+wget https://github.com/benjiao/SchedHTTP/archive/SchedHTTP-v1.0.0-beta.2.tar.gz
+tar -xvzf SchedHTTP-v1.0.0-beta.2.tar.gz
 ```
 ### (optional) Setup activate virtual environment 
 ```
@@ -29,14 +29,13 @@ source env/bin/activate
 
 ### Install required Python libraries
 ```
-cd SchedHTTP-SchedHTTP-v1.0.0-beta.1/
+cd SchedHTTP-SchedHTTP-v1.0.0-beta.2/
 pip install -r requirements.txt
 ```
 
 ### Initialize databases
 ```
 cd app
-mkdir -m 775 db
 python create_db.py
 python create_testdb.py
 ```
