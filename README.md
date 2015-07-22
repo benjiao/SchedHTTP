@@ -48,7 +48,7 @@ nosetests
 
 ...if no errors were raised, you should be good to go! Proceed to the next part.
 
-# Running the SchedHTTP
+# Running SchedHTTP
 SchedHTTP is composed of two major components (1) The Service and (2) The API. 
 
 ## The Service
@@ -65,7 +65,7 @@ python schedhttp-service.py stop
 python schedhttp-service.py restart
 ```
 
-# The API
+## The API
 The API is an HTTP API Service where you can Add, Fetch, and Delete tasks. To run it (while under `app`):
 ```
 python schedhttp-api.py
