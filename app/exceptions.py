@@ -1,2 +1,0 @@
-class SchedulerTasksException(Exception):
-    pass

@@ -1,1 +1,1 @@
-from task_tests import TestTasksCrud
+from task_tests import *
