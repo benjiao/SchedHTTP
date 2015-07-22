@@ -199,22 +199,42 @@ class TaskLogic:
 
             if results is True:
                 # If sending was successful, flag task as sent, save sent_date
-                session = self.sm()
-                session.query(Task).\
-                    filter(Task.uuid == task.uuid).\
-                    update({"is_sent": True,
-                            "sent_date": datetime.utcnow()})
-                session.commit()
-
+                self.setTaskAsSent(task_uuid=task.uuid)
                 return True
             else:
-                return False
+                raise exceptions.SchedulerHTTPException("Endpoint did not reply with a HTTP 200 Response")
 
         except exceptions.SchedulerHTTPException:
+            """ If HTTP Exception, increment task's retry count, update last_retry_date,
+                then re-raise exception
+            """
+            self.setTaskSendAttemptAsFail(task_uuid=task.uuid)
             raise
 
         except:
+            self.setTaskSendAttemptAsFail(task_uuid=task.uuid)
             raise
+
+    def setTaskSendAttemptAsFail(self, task_uuid):
+        session = self.sm()
+        task = session.query(Task).filter_by(uuid=task_uuid).limit(1).first()
+        task.is_sent = False
+        task.retry_count = task.retry_count + 1
+        task.last_retry_date = datetime.utcnow()
+        session.commit()
+        return True
+
+    def setTaskAsSent(self, task_uuid):
+        try:
+            session = self.sm()
+            session.query(Task).\
+                filter(Task.uuid == task_uuid).\
+                update({"is_sent": True,
+                        "sent_date": datetime.utcnow()})
+            session.commit()
+            return True
+        except:
+            return False
 
     def sendHTTPRequest(self, url, method, headers=None, body=None):
         # Build HTTP Request
@@ -235,7 +255,7 @@ class TaskLogic:
                 print response.read()
                 return True
             else:
-                raise exceptions.SchedulerHTTPException("Cannot send HTTP Request")
+                raise exceptions.SchedulerHTTPException("Endpoint did not reply with an HTTP 200 Response")
 
         except urllib2.HTTPError, e:
             raise exceptions.SchedulerHTTPException("HTTP Error: %s" % str(e.code), desc=e.read())

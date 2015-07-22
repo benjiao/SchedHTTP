@@ -319,6 +319,86 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         tasks.deleteAllTasks()
 
+    def test_call_task_http_endpoint_fail(self):
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        data_past = {
+            "scheduled_time": datetime.utcnow() - timedelta(hours=1),
+            "endpoint_url": "http://localhost/qwerpoiuasddfjasld",
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        task_uuid = tasks.createTask(
+            scheduled_time=data_past["scheduled_time"],
+            endpoint_url=data_past["endpoint_url"],
+            endpoint_headers=None,
+            endpoint_body=data_past["endpoint_body"],
+            endpoint_method=data_past["endpoint_method"],
+            max_retry_count=data_past["max_retry_count"])
+
+        task = tasks.getTaskByUUID(task_uuid)
+        print task.uuid
+        print task.endpoint_url
+        print str(task.endpoint_headers)
+
+        with self.assertRaises(SchedulerHTTPException):
+            tasks.callTaskHTTPEndpoint(task)
+
+        task_after_call = tasks.getTaskByUUID(task_uuid)
+        self.assertFalse(task_after_call.is_sent)
+        self.assertIsNone(task_after_call.sent_date)
+        self.assertEqual(task_after_call.retry_count, 1)
+        self.assertIsInstance(task_after_call.last_retry_date, datetime)
+
+        tasks.deleteAllTasks()
+
+    def test_increment_retry_count_on_fail(self):
+        """ On failed call to HTTP Endpoint,
+            the service must increment retry_count on db
+            the last_retry_date field should also be updated
+        """
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        data_past = {
+            "scheduled_time": datetime.utcnow() - timedelta(hours=1),
+            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_headers": {
+                "Content-Length": 0
+            },
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        task_uuid = tasks.createTask(
+            scheduled_time=data_past["scheduled_time"],
+            endpoint_url=data_past["endpoint_url"],
+            endpoint_headers=data_past["endpoint_headers"],
+            endpoint_body=data_past["endpoint_body"],
+            endpoint_method=data_past["endpoint_method"],
+            max_retry_count=data_past["max_retry_count"])
+
+        tasks.setTaskSendAttemptAsFail(task_uuid)
+
+        task_after = tasks.getTaskByUUID(task_uuid)
+        self.assertEqual(task_after.retry_count, 1)
+        self.assertIsInstance(task_after.last_retry_date, datetime)
+
+        old_retry_date = task_after.last_retry_date
+
+        tasks.setTaskSendAttemptAsFail(task_uuid)
+
+        task_after2 = tasks.getTaskByUUID(task_uuid)
+        self.assertEqual(task_after2.retry_count, 2)
+        self.assertIsInstance(task_after2.last_retry_date, datetime)
+        self.assertNotEqual(task_after2.last_retry_date, old_retry_date)
+
+
+class TestTaskHTTPFunctions(unittest.TestCase):
     def test_request_post(self):
         engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
@@ -336,6 +416,16 @@ class TestTaskDaemonFunctions(unittest.TestCase):
         self.assertTrue(results)
 
     def test_request_post_fail(self):
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        url = "http://localhost/asdfasdfwqerqwerzcxvzxcv"
+        method = "POST"
+
+        with self.assertRaises(SchedulerHTTPException):
+            tasks.sendHTTPRequest(url=url, method=method)
+
+    def test_request_post_fail_flags(self):
         engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
 
