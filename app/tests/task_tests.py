@@ -8,7 +8,7 @@ from datetime import timedelta
 from sqlalchemy import create_engine
 from ..models import Task
 from ..tasks import TaskLogic
-from ..exceptions import *
+from ..tasks import SchedulerHTTPException
 
 
 class TestTasksCrud(unittest.TestCase):

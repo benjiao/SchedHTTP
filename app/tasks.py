@@ -1,8 +1,7 @@
 import uuid
-import json
 import urllib2
 import httplib
-import exceptions
+import logging
 from models import Task
 from datetime import datetime
 from datetime import timedelta
@@ -10,8 +9,22 @@ from sqlalchemy.orm import sessionmaker
 from utilities.request2 import Request2
 
 
+class SchedulerTasksException(Exception):
+    pass
+
+
+class SchedulerHTTPException(SchedulerTasksException):
+    def __init__(self, value, desc=None):
+        self.value = value
+        self.desc = desc
+
+    def __str__(self):
+        return repr(self.value)
+
+
 class TaskLogic:
     def __init__(self, db_engine):
+        self.logger = logging.getLogger("TaskLogic")
         self.engine = db_engine
         self.sm = sessionmaker(bind=self.engine)
 
@@ -191,9 +204,9 @@ class TaskLogic:
             :rtype: boolean.
         """
 
-        print "Task:\t%s" % task.uuid
-        print "URL:\t%s" % task.endpoint_url
-        print "Method:\t%s" % task.endpoint_method
+        self.logger.debug("Task: %s" % task.uuid)
+        self.logger.debug("URL: %s" % task.endpoint_url)
+        self.logger.debug("Method: %s" % task.endpoint_method)
 
         try:
             results = self.sendHTTPRequest(
@@ -207,16 +220,19 @@ class TaskLogic:
                 self.setTaskAsSent(task_uuid=task.uuid)
                 return True
             else:
-                raise exceptions.SchedulerHTTPException("Endpoint did not reply with a HTTP 200 Response")
+                self.logger.debug("Attempt is Fail 0: %s" % task.uuid)
+                raise SchedulerHTTPException("Endpoint did not reply with a HTTP 200 Response")
 
-        except exceptions.SchedulerHTTPException:
+        except SchedulerHTTPException:
             """ If HTTP Exception, increment task's retry count, update last_retry_date,
                 then re-raise exception
             """
+            self.logger.info("Try")
             self.setTaskSendAttemptAsFail(task_uuid=task.uuid)
             raise
 
         except:
+            self.logger.exceotion("Attempt is Fail 2: %s" % task.uuid)
             self.setTaskSendAttemptAsFail(task_uuid=task.uuid)
             raise
 
@@ -254,7 +270,7 @@ class TaskLogic:
             for h_name, h_val in headers.iteritems():
                 req.add_header(h_name, h_val)
         else:
-            print "No headers!"
+            self.logger.info("No headers")
 
         try:
             response = urllib2.urlopen(req, data=body)
@@ -264,14 +280,14 @@ class TaskLogic:
                 print response.read()
                 return True
             else:
-                raise exceptions.SchedulerHTTPException("Endpoint did not reply with an HTTP 200 Response")
+                raise SchedulerHTTPException("Endpoint did not reply with an HTTP 200 Response")
 
         except urllib2.HTTPError, e:
-            raise exceptions.SchedulerHTTPException("HTTP Error: %s" % str(e.code), desc=e.read())
+            raise SchedulerHTTPException("HTTP Error: %s" % str(e.code), desc=e.read())
         except urllib2.URLError, e:
-            raise exceptions.SchedulerHTTPException("URL Error: %s" % str(e.reason))
+            raise SchedulerHTTPException("URL Error: %s" % str(e.reason))
         except httplib.HTTPException, e:
-            raise exceptions.SchedulerHTTPException("HTTP Exception")
+            raise SchedulerHTTPException("HTTP Exception")
         except Exception:
             raise
 
