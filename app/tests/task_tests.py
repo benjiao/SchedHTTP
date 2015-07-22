@@ -8,6 +8,7 @@ from datetime import timedelta
 from sqlalchemy import create_engine
 from ..models import Task
 from ..tasks import TaskLogic
+from ..exceptions import *
 
 
 class TestTasksCrud(unittest.TestCase):
@@ -17,9 +18,9 @@ class TestTasksCrud(unittest.TestCase):
 
         data = {
             "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            "endpoint_url": "http://test.com/test",
+            "endpoint_url": "http://headers.jsontest.com/",
             "endpoint_headers": {
-                "Authentication": "Test:Testing"
+                "Content-Length": 0
             },
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -52,6 +53,14 @@ class TestTasksCrud(unittest.TestCase):
         self.assertEqual(task_retrieved.endpoint_method, data["endpoint_method"])
         self.assertEqual(task_retrieved.max_retry_count, data["max_retry_count"])
 
+        # Check Default Values
+        self.assertFalse(task_retrieved.is_sent)
+        self.assertFalse(task_retrieved.is_failed)
+        self.assertIsNone(task_retrieved.sent_date)
+        self.assertEqual(task_retrieved.retry_count, 0)
+        self.assertIsInstance(task_retrieved.created_date, datetime)
+        self.assertIsNone(task_retrieved.last_retry_date)
+
         # Delete Task
         delete_return = tasks.deleteTaskByUUID(task_uuid)
         self.assertTrue(delete_return)
@@ -67,7 +76,7 @@ class TestTasksCrud(unittest.TestCase):
         print "\n[TestTasksCrud] - Count and Delete All"
         data = {
             "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            "endpoint_url": "http://test.com/test",
+            "endpoint_url": "http://headers.jsontest.com/",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -110,7 +119,7 @@ class TestTasksCrud(unittest.TestCase):
 
         data = {
             "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            "endpoint_url": "http://test.com/test",
+            "endpoint_url": "http://headers.jsontest.com/",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -161,7 +170,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_past = {
             "scheduled_time": datetime.utcnow() - timedelta(days=1),
-            "endpoint_url": "http://test.com/test",
+            "endpoint_url": "http://headers.jsontest.com/",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -170,7 +179,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_future = {
             "scheduled_time": datetime.utcnow() + timedelta(days=1),
-            "endpoint_url": "http://test.com/test",
+            "endpoint_url": "http://headers.jsontest.com/",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -214,7 +223,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_past = {
             "scheduled_time": datetime.utcnow() - timedelta(days=1),
-            "endpoint_url": "http://test.com/test",
+            "endpoint_url": "http://headers.jsontest.com/",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -223,7 +232,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_future = {
             "scheduled_time": datetime.utcnow() + timedelta(days=1),
-            "endpoint_url": "http://test.com/test",
+            "endpoint_url": "http://headers.jsontest.com/",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -271,3 +280,69 @@ class TestTaskDaemonFunctions(unittest.TestCase):
         active_tasks = tasks.getActiveTasks()
         self.assertEqual(len(active_tasks), 0)
         self.assertIsInstance(active_tasks, list)
+
+    def test_call_task_http_endpoint(self):
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        data_past = {
+            "scheduled_time": datetime.utcnow() - timedelta(hours=1),
+            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_headers": {
+                "Content-Length": 0
+            },
+            "endpoint_body": "Test Body",
+            "endpoint_method": "POST",
+            "max_retry_count": 5
+        }
+
+        task_uuid = tasks.createTask(
+            scheduled_time=data_past["scheduled_time"],
+            endpoint_url=data_past["endpoint_url"],
+            endpoint_headers=data_past["endpoint_headers"],
+            endpoint_body=data_past["endpoint_body"],
+            endpoint_method=data_past["endpoint_method"],
+            max_retry_count=data_past["max_retry_count"])
+
+        task = tasks.getTaskByUUID(task_uuid)
+        self.assertFalse(task.is_sent)
+        self.assertFalse(task.is_failed)
+        self.assertIsNone(task.sent_date)
+        self.assertEqual(task.retry_count, 0)
+
+        results = tasks.callTaskHTTPEndpoint(task)
+        self.assertTrue(results)
+
+        task_after_call = tasks.getTaskByUUID(task_uuid)
+        self.assertTrue(task_after_call.is_sent)
+        self.assertIsInstance(task_after_call.sent_date, datetime)
+
+        tasks.deleteAllTasks()
+
+    def test_request_post(self):
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        url = "http://headers.jsontest.com/"
+        method = "POST"
+        headers = {
+            "Content-Length": 0
+        }
+
+        results = tasks.sendHTTPRequest(url=url,
+                                        method=method,
+                                        headers=headers)
+
+        self.assertTrue(results)
+
+    def test_request_post_fail(self):
+        engine = create_engine('sqlite:///db/test.db', echo=False)
+        tasks = TaskLogic(db_engine=engine)
+
+        # Note: Calling this endpoint without the Content-Length error
+        #       returns an error
+        url = "http://headers.jsontest.com/"
+        method = "POST"
+
+        with self.assertRaises(SchedulerHTTPException):
+            tasks.sendHTTPRequest(url=url, method=method)

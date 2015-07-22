@@ -2,7 +2,7 @@ import datetime
 import sqlalchemy
 import json
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy import create_engine
 from sqlalchemy.ext import mutable
 
@@ -33,8 +33,12 @@ class Task(Base):
     max_retry_count = Column(Integer)
 
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
+    sent_date = Column(DateTime, default=None)
     last_retry_date = Column(DateTime, default=None)
     retry_count = Column(Integer, default=0)
+
+    is_sent = Column(Boolean, default=False)
+    is_failed = Column(Boolean, default=False)
 
     def __init__(self, task_uuid, scheduled_time=None,
                  endpoint_url=None, endpoint_headers=None,

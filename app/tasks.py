@@ -1,9 +1,13 @@
 import uuid
 import json
+import urllib2
+import httplib
+import exceptions
 from models import Task
 from datetime import datetime
 from datetime import timedelta
 from sqlalchemy.orm import sessionmaker
+from utilities.request2 import Request2
 
 
 class TaskLogic:
@@ -166,6 +170,80 @@ class TaskLogic:
 
         return active_tasks
 
+    def callTaskHTTPEndpoint(self, task):
+        """ Call the task's HTTP Endpoint, flag last retry date and increment retry count
+
+            Note: HTTP Endpoint MUST reply with a 200 OK response for the scheduler
+                  to consider attempt a success
+
+            If an error occurs, a SchedulerHTTPException with e.value and e.desc
+            as summary and description for error, respectively.
+
+            :param task: The task to trigger
+            :type task: An instance of the Task object
+
+            :return: True if HTTP Endpoint returned a 200 OK response, False otherwise
+            :rtype: boolean.
+        """
+
+        print "Task:\t%s" % task.uuid
+        print "URL:\t%s" % task.endpoint_url
+        print "Method:\t%s" % task.endpoint_method
+
+        try:
+            results = self.sendHTTPRequest(
+                url=task.endpoint_url,
+                method=task.endpoint_method,
+                headers=task.endpoint_headers)
+
+            if results is True:
+                # If sending was successful, flag task as sent, save sent_date
+                session = self.sm()
+                session.query(Task).\
+                    filter(Task.uuid == task.uuid).\
+                    update({"is_sent": True,
+                            "sent_date": datetime.utcnow()})
+                session.commit()
+
+                return True
+            else:
+                return False
+
+        except exceptions.SchedulerHTTPException:
+            raise
+
+        except:
+            raise
+
+    def sendHTTPRequest(self, url, method, headers=None):
+        # Build HTTP Request
+        req = Request2(url, method=method)
+
+        # Add Headers
+        if isinstance(headers, dict):
+            for h_name, h_val in headers.iteritems():
+                req.add_header(h_name, h_val)
+        else:
+            print "No headers!"
+
+        try:
+            response = urllib2.urlopen(req)
+            code = response.getcode()
+
+            if code == 200:
+                print response.read()
+                return True
+            else:
+                raise exceptions.SchedulerHTTPException("Cannot send HTTP Request")
+
+        except urllib2.HTTPError, e:
+            raise exceptions.SchedulerHTTPException("HTTP Error: %s" % str(e.code), desc=e.read())
+        except urllib2.URLError, e:
+            raise exceptions.SchedulerHTTPException("URL Error: %s" % str(e.reason))
+        except httplib.HTTPException, e:
+            raise exceptions.SchedulerHTTPException("HTTP Exception")
+        except Exception:
+            raise
 
 if __name__ == '__main__':
     from sqlalchemy import create_engine
@@ -175,46 +253,22 @@ if __name__ == '__main__':
 
     data_past = {
         "scheduled_time": datetime.utcnow() - timedelta(hours=1),
-        "endpoint_url": "http://test.com/test",
-        "endpoint_headers": None,
+        "endpoint_url": "http://headers.jsontest.com/",
+        "endpoint_headers": {
+            "Content-Length": 0
+        },
         "endpoint_body": "Test Body",
         "endpoint_method": "POST",
         "max_retry_count": 5
     }
 
-    data_future = {
-        "scheduled_time": datetime.utcnow() + timedelta(hours=1),
-        "endpoint_url": "http://test.com/test",
-        "endpoint_headers": None,
-        "endpoint_body": "Test Body",
-        "endpoint_method": "POST",
-        "max_retry_count": 5
-    }
+    task_uuid = tasks.createTask(
+        scheduled_time=data_past["scheduled_time"],
+        endpoint_url=data_past["endpoint_url"],
+        endpoint_headers=data_past["endpoint_headers"],
+        endpoint_body=data_past["endpoint_body"],
+        endpoint_method=data_past["endpoint_method"],
+        max_retry_count=data_past["max_retry_count"])
 
-    delete_results = tasks.deleteAllTasks()
-
-    # Insert 8 tasks set in the past
-    for x in xrange(8):
-        tasks.createTask(
-            scheduled_time=data_past["scheduled_time"],
-            endpoint_url=data_past["endpoint_url"],
-            endpoint_headers=data_past["endpoint_headers"],
-            endpoint_body=data_past["endpoint_body"],
-            endpoint_method=data_past["endpoint_method"],
-            max_retry_count=data_past["max_retry_count"])
-
-    # Insert 4 tasks set in the future
-    for x in xrange(4):
-        tasks.createTask(
-            scheduled_time=data_future["scheduled_time"],
-            endpoint_url=data_future["endpoint_url"],
-            endpoint_headers=data_future["endpoint_headers"],
-            endpoint_body=data_future["endpoint_body"],
-            endpoint_method=data_future["endpoint_method"],
-            max_retry_count=data_future["max_retry_count"])
-
-    active_tasks_all = tasks.getActiveTasks()
-
-    print datetime.utcnow()
-    for task in active_tasks_all:
-        print task.scheduled_time
+    task = tasks.getTaskByUUID(task_uuid)
+    tasks.callTaskHTTPEndpoint(task)
