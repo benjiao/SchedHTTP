@@ -15,8 +15,8 @@ We have built this service to trigger jobs/events via HTTP endpoints.
 
 ### Download and extract latest release
 ```
-wget https://github.com/benjiao/SchedHTTP/archive/SchedHTTP-v1.0.0-beta.2.tar.gz
-tar -xvzf SchedHTTP-v1.0.0-beta.2.tar.gz
+wget https://github.com/benjiao/SchedHTTP/archive/SchedHTTP-v1.0.1.tar.gz
+tar -xvzf SchedHTTP-v1.0.1.tar.gz
 ```
 ### (optional) Setup activate virtual environment 
 ```
@@ -29,7 +29,7 @@ source env/bin/activate
 
 ### Install required Python libraries
 ```
-cd SchedHTTP-SchedHTTP-v1.0.0-beta.2/
+cd SchedHTTP-v1.0.1/
 pip install -r requirements.txt
 ```
 
@@ -56,7 +56,7 @@ Since v1.0.1, A script has been added to start/stop both service and API as foll
 ./schedhttp stop
 ```
 
-Default tcp port for the api is `:6500`
+Default TCP port for the API is `:6500`
 
 ## The Service
 The service is the main daemon that is responsible for checking for tasks that should be run at a given time and call the HTTP endpoint tied to those tasks. Running the service is simple (you should be under `app`):
