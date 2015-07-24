@@ -6,9 +6,9 @@ import unittest
 from datetime import datetime
 from datetime import timedelta
 from sqlalchemy import create_engine
-from ..models import Task
-from ..tasks import TaskLogic
-from ..tasks import SchedulerHTTPException
+from models import Task
+from tasks import TaskLogic
+from tasks import SchedulerHTTPException
 
 
 class TestTasksCrud(unittest.TestCase):

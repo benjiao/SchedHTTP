@@ -1,7 +1,7 @@
 #!flask/bin/python
 from flask import Flask
 from tasks import TaskLogic
-from modules.tasks import mod_tasks
+from blueprints.tasks import mod_tasks
 from sqlalchemy import create_engine
 
 app = Flask(__name__)
