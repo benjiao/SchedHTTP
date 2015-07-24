@@ -1,5 +1,7 @@
 # SchedHTTP
 
+[![Build Status](https://travis-ci.org/benjiao/SchedHTTP.svg)](https://travis-ci.org/benjiao/SchedHTTP)
+
 [This service is still under development]
 
 A simple job scheduling service written in Python. Sends an HTTP request to a specified endpoint, at a specified time.
