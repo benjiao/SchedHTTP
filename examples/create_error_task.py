@@ -28,7 +28,7 @@ if __name__ == '__main__':
         }
     }
 
-    url = "http://localhost:5000/tasks/"
+    url = "http://localhost:6500/tasks/"
     req = Request2(url, method="POST", data=json.dumps(request_body))
     req.add_header('Content-type', 'application/vnd.api+json')
     req.add_header('Accept', 'application/vnd.api+json')

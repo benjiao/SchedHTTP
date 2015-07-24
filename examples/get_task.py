@@ -17,7 +17,7 @@ if __name__ == '__main__':
     import logging
 
     task_uuid = "5e9003e1-2981-43d3-b8bb-6d5571dc53a3"
-    url = "http://localhost:5000/tasks/%s" % task_uuid
+    url = "http://localhost:6500/tasks/%s" % task_uuid
     req = Request2(url, method="GET")
     req.add_header('Accept', 'application/vnd.api+json')
 
