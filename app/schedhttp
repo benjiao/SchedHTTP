@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo "test"
+
+if [ "$1" == "start" ]; then
+
+    echo "Starting SchedHTTP Service..."
+    python schedhttp-service.py start && echo "SchedHTTP Service Started!"
+
+    echo "Starting SchedHTTP API..."
+    uwsgi --ini config-uwsgi.ini && echo "SchedHTTP API Started!"
+
+elif [ "$1" == "stop" ]; then
+
+    echo "Stopping SchedHTTP API..."
+    kill -9 `cat /tmp/schedhttp-api.pid` && rm /tmp/schedhttp-api.pid && echo "SchedHTTP API Stopped!"
+
+    echo "Stopping SchedHTTP Service..."
+    python schedhttp-service.py stop && echo "SchedHTTP Service Stopped!"
+
+else
+    echo "Unidentified command!" 
+fi

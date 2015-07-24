@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     task_uuid = "d98ea285-902c-44f5-b264-de9bd2c11473"
 
-    url = "http://localhost:5000/tasks/%s" % task_uuid
+    url = "http://localhost:6500/tasks/%s" % task_uuid
     req = Request2(url, method="DELETE")
     req.add_header('Accept', 'application/vnd.api+json')
 
