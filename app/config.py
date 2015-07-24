@@ -7,8 +7,8 @@ class Config(object):
     LOG_LEVEL = logging.DEBUG
 
     DAEMON_PID_FILE = '/tmp/schedhttp-service.pid'
-    DAEMON_OUT_LOG = '/var/log/schedhttp-service.out.log'
-    DAEMON_ERR_LOG = '/var/log/schedhttp-service.err.log'
+    DAEMON_OUT_LOG = '/var/log/schedhttp/schedhttp-service.out.log'
+    DAEMON_ERR_LOG = '/var/log/schedhttp/schedhttp-service.err.log'
 
     DATABASE_URI = 'sqlite:///db/app.db'
     TEST_DATABASE_URI = 'sqlite:///db/test.db'
