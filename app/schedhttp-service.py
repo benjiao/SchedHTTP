@@ -16,7 +16,7 @@ class SchedHTTPService(Daemon):
         self.config = config
         self.logger = logger
 
-        self.db_engine = create_engine(self.config.DATABASE_URI, echo=False)
+        self.db_engine = create_engine(self.config.DATABASE_URI, echo=True)
         self.tasks = TaskLogic(db_engine=self.db_engine)
         return True
 
@@ -44,7 +44,7 @@ class SchedHTTPService(Daemon):
                     self.logger.warning("Error: %s", e.value)
 
                 except:
-                    pass
+                    self.logger.exception("Error in calling task!")
 
             self.logger.info("===============================================================\n")
             time.sleep(5)
