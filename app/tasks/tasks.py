@@ -171,6 +171,8 @@ class TaskLogic:
             filter(Task.is_failed == 0).\
             limit(limit).all()
 
+        session.commit()
+
         """ TODO: Filter tasks by:
             (1) Last retry attempt is beyond set timeout value in config
         """
@@ -304,6 +306,3 @@ if __name__ == '__main__':
         endpoint_body=data_past["endpoint_body"],
         endpoint_method=data_past["endpoint_method"],
         max_retry_count=data_past["max_retry_count"])
-
-    task = tasks.getTaskByUUID(task_uuid)
-    tasks.callTaskHTTPEndpoint(task)
