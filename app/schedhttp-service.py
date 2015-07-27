@@ -16,7 +16,7 @@ class SchedHTTPService(Daemon):
         self.config = config
         self.logger = logger
 
-        self.db_engine = create_engine(self.config.DATABASE_URI, echo=True)
+        self.db_engine = create_engine(self.config.DATABASE_URI, echo=self.config.SQLALCHEMY_ECHO)
         self.tasks = TaskLogic(db_engine=self.db_engine)
         return True
 

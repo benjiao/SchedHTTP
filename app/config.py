@@ -10,5 +10,6 @@ class Config(object):
     DAEMON_OUT_LOG = '/var/log/schedhttp/schedhttp-service.out.log'
     DAEMON_ERR_LOG = '/var/log/schedhttp/schedhttp-service.err.log'
 
+    SQLALCHEMY_ECHO = False
     DATABASE_URI = 'sqlite:///db/app.db'
     TEST_DATABASE_URI = 'sqlite:///db/test.db'
