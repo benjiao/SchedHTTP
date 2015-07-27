@@ -221,7 +221,7 @@ class TaskLogic:
             raise
 
         except:
-            self.logger.exceotion("Attempt is Fail 2: %s" % task.uuid)
+            self.logger.exception("Attempt is Fail 2: %s" % task.uuid)
             self.setTaskSendAttemptAsFail(task_uuid=task.uuid)
             raise
 

@@ -31,7 +31,6 @@ class SchedHTTPService(Daemon):
     def run(self):
         while True:
             active_tasks = self.tasks.getActiveTasks()
-            self.logger.info("===============================================================")
             self.logger.info("Active Tasks: %s: %s" % (len(active_tasks), str(active_tasks)))
 
             for task in active_tasks:
@@ -41,12 +40,10 @@ class SchedHTTPService(Daemon):
                     self.tasks.callTaskHTTPEndpoint(task)
                     self.logger.info("Sent! %s: %s" % (task.uuid, task.endpoint_url))
                 except SchedulerHTTPException, e:
-                    self.logger.warning("Error: %s", e.value)
-
+                    self.logger.exception("Error: %s", e.value)
                 except:
                     self.logger.exception("Error in calling task!")
 
-            self.logger.info("===============================================================\n")
             time.sleep(5)
 
 if __name__ == "__main__":
