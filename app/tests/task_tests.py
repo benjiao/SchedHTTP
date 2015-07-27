@@ -414,9 +414,11 @@ class TestTaskDaemonFunctions(unittest.TestCase):
         engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
 
+        tasks.deleteAllTasks()
+
         data_past = {
             "scheduled_time": datetime.utcnow() - timedelta(hours=1),
-            "endpoint_url": "http://localhost/asdfasdfwqerqwerzcxvzxcv",
+            "endpoint_url": "http://asdfasdfasdfasd/asdfasdfwqerqwerzcxvzxcv",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",

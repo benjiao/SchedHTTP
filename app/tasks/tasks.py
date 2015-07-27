@@ -57,8 +57,13 @@ class TaskLogic:
             max_retry_count=max_retry_count)
 
         session = self.sm()
-        session.add(newtask)
-        session.commit()
+        try:
+            session.add(newtask)
+            session.commit()
+        except:
+            raise
+        finally:
+            session.close()
 
         return task_uuid
 
@@ -73,7 +78,12 @@ class TaskLogic:
         """
 
         session = self.sm()
-        results = session.query(Task).filter_by(uuid=task_uuid).limit(1)
+        try:
+            results = session.query(Task).filter_by(uuid=task_uuid).limit(1)
+        except:
+            raise
+        finally:
+            session.close()
 
         return results.first()
 
@@ -88,9 +98,14 @@ class TaskLogic:
         """
 
         session = self.sm()
-        session.query(Task).filter_by(uuid=task_uuid).\
-            delete(synchronize_session=False)
-        session.commit()
+        try:
+            session.query(Task).filter_by(uuid=task_uuid).\
+                delete(synchronize_session=False)
+            session.commit()
+        except:
+            raise
+        finally:
+            session.close()
 
         return True
 
@@ -105,7 +120,13 @@ class TaskLogic:
         """
 
         session = self.sm()
-        task_count = session.query(Task).count()
+        try:
+            task_count = session.query(Task).count()
+        except:
+            raise
+        finally:
+            session.close()
+
         return task_count
 
     def deleteAllTasks(self):
@@ -141,12 +162,18 @@ class TaskLogic:
         """
 
         session = self.sm()
-        results = session.query(Task).\
-            filter_by(uuid=task_uuid).\
-            update(fields_to_update)
 
-        print results
-        session.commit()
+        try:
+            results = session.query(Task).\
+                filter_by(uuid=task_uuid).\
+                update(fields_to_update)
+
+            print results
+            session.commit()
+        except:
+            raise
+        finally:
+            session.close()
 
         return True
 
@@ -164,14 +191,20 @@ class TaskLogic:
             :rtype: A list() of Task objects
         """
 
-        session = self.sm()
-        active_tasks = session.query(Task).\
-            filter(Task.scheduled_time < current_time).\
-            filter(Task.is_sent == 0).\
-            filter(Task.is_failed == 0).\
-            limit(limit).all()
+        try:
+            session = self.sm()
 
-        session.commit()
+            session.commit()
+            active_tasks = session.query(Task).\
+                filter(Task.scheduled_time < current_time).\
+                filter(Task.is_sent == 0).\
+                filter(Task.is_failed == 0).\
+                limit(limit).all()
+
+        except:
+            raise
+        finally:
+            pass
 
         """ TODO: Filter tasks by:
             (1) Last retry attempt is beyond set timeout value in config
@@ -229,20 +262,27 @@ class TaskLogic:
 
     def setTaskSendAttemptAsFail(self, task_uuid):
         session = self.sm()
-        task = session.query(Task).filter_by(uuid=task_uuid).limit(1).first()
-        task.is_sent = False
-        task.retry_count = task.retry_count + 1
-        task.last_retry_date = datetime.utcnow()
 
-        if task.retry_count == task.max_retry_count:
-            task.is_failed = True
+        try:
+            task = session.query(Task).filter_by(uuid=task_uuid).limit(1).first()
+            task.is_sent = False
+            task.retry_count = task.retry_count + 1
+            task.last_retry_date = datetime.utcnow()
 
-        session.commit()
-        return True
+            if task.retry_count == task.max_retry_count:
+                task.is_failed = True
+
+            session.commit()
+            return True
+        except:
+            raise
+        finally:
+            session.close()
 
     def setTaskAsSent(self, task_uuid):
+        session = self.sm()
+
         try:
-            session = self.sm()
             session.query(Task).\
                 filter(Task.uuid == task_uuid).\
                 update({"is_sent": True,
@@ -251,6 +291,8 @@ class TaskLogic:
             return True
         except:
             return False
+        finally:
+            session.close()
 
     def sendHTTPRequest(self, url, method, headers=None, body=None):
         # Build HTTP Request
