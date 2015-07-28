@@ -11,5 +11,5 @@ class Config(object):
     DAEMON_ERR_LOG = '/var/log/schedhttp/schedhttp-service.err.log'
 
     SQLALCHEMY_ECHO = False
-    DATABASE_URI = 'mysql://root:password@localhost/schedulerdb'
-    TEST_DATABASE_URI = 'mysql://root:password@localhost/schedulertestdb'
+    DATABASE_URI = 'sqlite:///db/app.db'
+    TEST_DATABASE_URI = 'sqlite:///db/test.db'

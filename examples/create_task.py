@@ -1,5 +1,6 @@
 import json
 import urllib2
+from datetime import datetime, timedelta
 
 
 class Request2(urllib2.Request):
@@ -16,10 +17,12 @@ class Request2(urllib2.Request):
 if __name__ == '__main__':
     import logging
 
+    later = datetime.utcnow() + timedelta(seconds=5)
+    later_str = later.strftime("%Y-%m-%d %H:%M:%S")
     request_body = {
         "data": {
             "attributes": {
-                "scheduled_time": "2015-07-12 00:00:00",
+                "scheduled_time": later_str,
                 "endpoint_method": "POST",
                 "endpoint_url": "http://headers.jsontest.com/",
                 "endpoint_headers": {

@@ -6,6 +6,7 @@ from models import Task
 from datetime import datetime
 from datetime import timedelta
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
 from utilities.request2 import Request2
 
 from exceptions import SchedulerHTTPException
@@ -16,6 +17,7 @@ class TaskLogic:
         self.logger = logging.getLogger("TaskLogic")
         self.engine = db_engine
         self.sm = sessionmaker(bind=self.engine)
+        self.Session = scoped_session(self.sm)
 
     def createTask(self, scheduled_time, endpoint_url,
                    endpoint_headers, endpoint_body,
@@ -61,6 +63,7 @@ class TaskLogic:
             session.add(newtask)
             session.commit()
         except:
+            session.rollback()
             raise
         finally:
             session.close()
@@ -81,6 +84,7 @@ class TaskLogic:
         try:
             results = session.query(Task).filter_by(uuid=task_uuid).limit(1)
         except:
+            session.rollback()
             raise
         finally:
             session.close()
@@ -103,6 +107,7 @@ class TaskLogic:
                 delete(synchronize_session=False)
             session.commit()
         except:
+            session.rollback()
             raise
         finally:
             session.close()
@@ -123,6 +128,7 @@ class TaskLogic:
         try:
             task_count = session.query(Task).count()
         except:
+            session.rollback()
             raise
         finally:
             session.close()
@@ -137,8 +143,14 @@ class TaskLogic:
         """
 
         session = self.sm()
-        session.query(Task).delete(synchronize_session=False)
-        session.commit()
+        try:
+            session.query(Task).delete(synchronize_session=False)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
         return True
 
@@ -171,13 +183,14 @@ class TaskLogic:
             print results
             session.commit()
         except:
+            session.rollback()
             raise
         finally:
             session.close()
 
         return True
 
-    def getActiveTasks(self, limit=None, current_time=datetime.utcnow()):
+    def getActiveTasks(self, limit=None, current_time=None):
         """ Retrieve overdue tasks.
 
             :param limit: A limit to the number of tasks to return. None means no limit
@@ -191,10 +204,12 @@ class TaskLogic:
             :rtype: A list() of Task objects
         """
 
-        try:
-            session = self.sm()
+        if current_time is None:
+            current_time = datetime.utcnow()
 
-            session.commit()
+        logging.info("Current Time: %s", str(current_time))
+        try:
+            session = self.Session()
             active_tasks = session.query(Task).\
                 filter(Task.scheduled_time < current_time).\
                 filter(Task.is_sent == 0).\
@@ -202,9 +217,10 @@ class TaskLogic:
                 limit(limit).all()
 
         except:
+            session.rollback()
             raise
         finally:
-            pass
+            self.Session.remove()
 
         """ TODO: Filter tasks by:
             (1) Last retry attempt is beyond set timeout value in config
@@ -261,7 +277,7 @@ class TaskLogic:
             raise
 
     def setTaskSendAttemptAsFail(self, task_uuid):
-        session = self.sm()
+        session = self.Session()
 
         try:
             task = session.query(Task).filter_by(uuid=task_uuid).limit(1).first()
@@ -280,7 +296,7 @@ class TaskLogic:
             session.close()
 
     def setTaskAsSent(self, task_uuid):
-        session = self.sm()
+        session = self.Session()
 
         try:
             session.query(Task).\

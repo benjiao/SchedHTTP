@@ -2,13 +2,13 @@ import datetime
 import sqlalchemy
 import json
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 from sqlalchemy import create_engine
 from sqlalchemy.ext import mutable
 
 
 class JsonEncodedDict(sqlalchemy.TypeDecorator):
-    impl = sqlalchemy.String
+    impl = sqlalchemy.Text
 
     def process_bind_param(self, value, dialect):
         return json.dumps(value)
@@ -24,12 +24,12 @@ class Task(Base):
     __tablename__ = 'task'
 
     id = Column(Integer, primary_key=True)
-    uuid = Column(String)
+    uuid = Column(String(100))
     scheduled_time = Column(DateTime)
-    endpoint_url = Column(String)
+    endpoint_url = Column(String(255))
     endpoint_headers = Column(JsonEncodedDict)
-    endpoint_body = Column(String)
-    endpoint_method = Column(String)
+    endpoint_body = Column(Text)
+    endpoint_method = Column(String(255))
     max_retry_count = Column(Integer)
 
     created_date = Column(DateTime, default=datetime.datetime.utcnow)

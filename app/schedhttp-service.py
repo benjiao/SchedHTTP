@@ -16,7 +16,8 @@ class SchedHTTPService(Daemon):
         self.config = config
         self.logger = logger
 
-        self.db_engine = create_engine(self.config.DATABASE_URI, echo=self.config.SQLALCHEMY_ECHO)
+        self.db_engine = create_engine(self.config.DATABASE_URI,
+                                       echo=self.config.SQLALCHEMY_ECHO)
         self.tasks = TaskLogic(db_engine=self.db_engine)
         return True
 
@@ -44,7 +45,7 @@ class SchedHTTPService(Daemon):
                 except:
                     self.logger.exception("Error in calling task!")
 
-            time.sleep(5)
+            time.sleep(1)
 
 if __name__ == "__main__":
     config = config.Config
