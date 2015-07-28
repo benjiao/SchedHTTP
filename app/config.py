@@ -13,3 +13,8 @@ class Config(object):
     SQLALCHEMY_ECHO = False
     DATABASE_URI = 'mysql://root:password@localhost/schedulerdb'
     TEST_DATABASE_URI = 'mysql://root:password@localhost/schedulertestdb'
+
+    """
+    The number of seconds between each check
+    """
+    POLL_INTERVAL = 5

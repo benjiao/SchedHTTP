@@ -13,3 +13,8 @@ class Config(object):
     SQLALCHEMY_ECHO = False
     DATABASE_URI = 'sqlite:///db/app.db'
     TEST_DATABASE_URI = 'sqlite:///db/test.db'
+
+    """
+    The number of seconds between each check
+    """
+    POLL_INTERVAL = 5

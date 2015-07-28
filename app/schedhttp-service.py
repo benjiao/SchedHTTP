@@ -45,7 +45,7 @@ class SchedHTTPService(Daemon):
                 except:
                     self.logger.exception("Error in calling task!")
 
-            time.sleep(1)
+            time.sleep(self.config.POLL_INTERVAL)
 
 if __name__ == "__main__":
     config = config.Config
