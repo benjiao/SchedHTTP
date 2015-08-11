@@ -2,7 +2,9 @@ import logging
 
 
 class Config(object):
-    LOG_FILE = 'tmp/scheduler.log'
+    DEBUG = True
+
+    LOG_FILE = '/var/log/schedhttp/schedhttp-api.log'
     LOG_FORMAT = '%(asctime)s %(levelname)-8s %(message)s'
     LOG_LEVEL = logging.DEBUG
 
