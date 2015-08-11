@@ -41,7 +41,7 @@ def createTask():
     except:
         return make_response("Invalid Data Format!", 400)
 
-    current_app.logger.info("Data: %s", json.dumps(data, indent=4))
+    current_app.logger.info("Create Task Called! Data: %s", json.dumps(data, indent=4))
 
     # Check required fields before moving on
     try:

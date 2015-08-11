@@ -22,11 +22,11 @@ if __name__ == '__main__':
     request_body = {
         "data": {
             "attributes": {
-                "scheduled_time": later_str,
+                "scheduled_time": "2015-08-25 16:00:00",
                 "endpoint_method": "POST",
-                "endpoint_url": "http://headers.jsontest.com/",
+                "endpoint_url": "http://localhost:4000/campaign_end/904",
                 "endpoint_headers": {
-                    "Content-Length": 0
+                    "Content-Length": "0"
                 },
                 "max_retry_count": 2
             },
