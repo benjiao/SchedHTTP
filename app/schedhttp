@@ -2,7 +2,7 @@
 
 echo "test"
 
-mkdir -m 775 -p /var/log/schedhttp
+sudo mkdir -m 775 -p /var/log/schedhttp
 
 if [ "$1" == "start" ]; then
 
