@@ -23,6 +23,12 @@ app.logger.addHandler(handler)
 app.tasks = TaskLogic(db_engine=engine)
 app.register_blueprint(mod_tasks, url_prefix="/tasks")
 
+
+@app.route('/')
+def index():
+    app.logger.info("Index called!")
+    return "Ping!"
+
 if __name__ == '__main__':
     try:
         app.run(host='0.0.0.0', port=6500, debug=True)
