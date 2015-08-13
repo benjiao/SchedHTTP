@@ -27,7 +27,7 @@ app.register_blueprint(mod_tasks, url_prefix="/tasks")
 @app.route('/')
 def index():
     app.logger.info("Index called!")
-    return "Ping!"
+    return "<h1>Ping!</h1><br /><h3>Welcome to SchedHTTP</h3>"
 
 if __name__ == '__main__':
     try:
