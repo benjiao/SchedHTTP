@@ -18,7 +18,7 @@ class TestTasksCrud(unittest.TestCase):
 
         data = {
             "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com/",
             "endpoint_headers": {
                 "Content-Length": 0
             },
@@ -76,7 +76,7 @@ class TestTasksCrud(unittest.TestCase):
         print "\n[TestTasksCrud] - Count and Delete All"
         data = {
             "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -119,7 +119,7 @@ class TestTasksCrud(unittest.TestCase):
 
         data = {
             "scheduled_time": datetime.strptime("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -170,7 +170,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_past = {
             "scheduled_time": datetime.utcnow() - timedelta(days=1),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -179,7 +179,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_future = {
             "scheduled_time": datetime.utcnow() + timedelta(days=1),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -223,7 +223,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_past = {
             "scheduled_time": datetime.utcnow() - timedelta(days=1),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -232,7 +232,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_future = {
             "scheduled_time": datetime.utcnow() + timedelta(days=1),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -272,7 +272,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
             active
         """
 
-        engine = create_engine('sqlite:///db/test.db', echo=False)
+        engine = create_engine('http://example.com', echo=False)
         tasks = TaskLogic(db_engine=engine)
 
         tasks.deleteAllTasks()
@@ -287,7 +287,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_past = {
             "scheduled_time": datetime.utcnow() - timedelta(hours=1),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": {
                 "Content-Length": 0
             },
@@ -375,7 +375,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_past = {
             "scheduled_time": datetime.utcnow() - timedelta(hours=1),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": {
                 "Content-Length": 0
             },
@@ -475,7 +475,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
 
         data_past = {
             "scheduled_time": datetime.utcnow() - timedelta(hours=1),
-            "endpoint_url": "http://headers.jsontest.com/",
+            "endpoint_url": "http://example.com",
             "endpoint_headers": None,
             "endpoint_body": "Test Body",
             "endpoint_method": "POST",
@@ -524,7 +524,7 @@ class TestTaskHTTPFunctions(unittest.TestCase):
         engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
 
-        url = "http://headers.jsontest.com/"
+        url = "http://example.com"
         method = "POST"
         headers = {
             "Content-Length": 0
@@ -552,7 +552,7 @@ class TestTaskHTTPFunctions(unittest.TestCase):
 
         # Note: Calling this endpoint without the Content-Length error
         #       returns an error
-        url = "http://headers.jsontest.com/"
+        url = "http://example.com"
         method = "POST"
 
         with self.assertRaises(SchedulerHTTPException):
