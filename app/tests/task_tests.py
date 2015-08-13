@@ -272,7 +272,7 @@ class TestTaskDaemonFunctions(unittest.TestCase):
             active
         """
 
-        engine = create_engine('http://example.com', echo=False)
+        engine = create_engine('sqlite:///db/test.db', echo=False)
         tasks = TaskLogic(db_engine=engine)
 
         tasks.deleteAllTasks()
