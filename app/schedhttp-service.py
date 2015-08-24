@@ -16,8 +16,13 @@ class SchedHTTPService(Daemon):
         self.config = config
         self.logger = logger
 
-        self.db_engine = create_engine(self.config.DATABASE_URI,
-                                       echo=self.config.SQLALCHEMY_ECHO)
+        self.db_engine = create_engine(
+            self.config.DATABASE_URI,
+            pool_size=20,
+            max_overflow=0,
+            pool_recycle=3600,  # Recycle connections every 1 hr
+            echo=self.config.SQLALCHEMY_ECHO)
+
         self.tasks = TaskLogic(db_engine=self.db_engine)
         return True
 

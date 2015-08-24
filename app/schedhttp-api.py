@@ -10,7 +10,12 @@ app = Flask(__name__)
 
 app.config.from_object('config.Config')
 
-engine = create_engine(app.config['DATABASE_URI'], echo=False)
+engine = create_engine(
+    app.config['DATABASE_URI'],
+    pool_size=20,
+    max_overflow=0,
+    pool_recycle=3600,  # Recycle connections every 1 hr
+    echo=False)
 
 formatter = logging.Formatter(app.config['LOG_FORMAT'])
 handler = RotatingFileHandler(app.config['LOG_FILE'])
