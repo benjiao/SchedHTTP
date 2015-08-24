@@ -18,6 +18,7 @@ class SchedHTTPService(Daemon):
 
         self.db_engine = create_engine(
             self.config.DATABASE_URI,
+            poolclass=self.config.SQLALCHEMY_POOLCLASS,
             pool_size=20,
             max_overflow=0,
             pool_recycle=3600,  # Recycle connections every 1 hr

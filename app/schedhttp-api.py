@@ -12,9 +12,10 @@ app.config.from_object('config.Config')
 
 engine = create_engine(
     app.config['DATABASE_URI'],
+    poolclass=app.config['SQLALCHEMY_POOLCLASS'],
     pool_size=20,
-    max_overflow=0,
     pool_recycle=3600,  # Recycle connections every 1 hr
+    max_overflow=0,
     echo=False)
 
 formatter = logging.Formatter(app.config['LOG_FORMAT'])
