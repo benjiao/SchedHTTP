@@ -1,4 +1,4 @@
-# SchedHTTP
+# skdlr (/ˈskejo͞olər'/)
 
 [![Build Status](https://travis-ci.org/benjiao/SchedHTTP.svg)](https://travis-ci.org/benjiao/SchedHTTP)
 
